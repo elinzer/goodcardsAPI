@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from rest_framework import status
 from rest_framework.decorators import api_view
 from cards.models import Card, Deck
@@ -18,20 +19,26 @@ class CardListView(APIView):
 class CardDetailView(APIView):
     @api_view(['GET'])
     def get_card_detail(request, pk):
-        card = Card.objects.get(id=pk)
-        serializer = CardSerializer(card)
-        return Response(serializer.data)        
+        try:
+            card = Card.objects.get(id=pk)
+        except Card.DoesNotExist:
+            return Response(data={"message": "No card found"}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            serializer = CardSerializer(card)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CreateDeck(APIView):
     @api_view(['POST'])
     def create_deck(request):
-        deck = Deck(name=request.data['name'], user=User.objects.get(id=1))
-        deck.save()
+        deck = Deck.objects.create(
+            name=request.data['name'],
+            user=User.objects.get(id=request.data['user_id'])
+        )
         return Response(f"Successfully created deck {deck.name}", status=status.HTTP_201_CREATED)
 
 
 class AddCardToDeck(APIView):
     @api_view(['POST'])
-    def post(self, request):
+    def add_card_to_deck(self, request):
         pass
