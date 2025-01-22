@@ -13,7 +13,7 @@ class TestCard(TestCase):
     def test_get_cards_list_when_there_are_cards_in_db(self):
         """
         GIVEN when there are cards in the database
-        WHEN a get is request is sent
+        WHEN a GET request is sent
         THEN it should return a list of cards.
         """
         card1 = Card.objects.create(
@@ -39,5 +39,32 @@ class TestCard(TestCase):
         self.assertEqual(len(response.data), 2)
 
 
-    def test_get_cards_list_when_there_are_no_cards_in_db(self):
-        pass
+    def test_get_card_details_when_there_are_cards_in_db(self):
+        """
+        GIVEN when there are cards in the database
+        WHEN a GET request is sent
+        THEN it should return a single card's details.
+        """
+        card1 = Card.objects.create(
+            name="Cool Card",
+            color_identity="G",
+            card_type="Legendary",
+            rarity="Common",
+            mtg_set="DSK",
+            text="A cool card",
+            image_url="www.imagurl.com"
+        )
+
+        #TODO: can i test this with {pk} instead of "1"?
+        response=self.client.get('/cards/api/1')
+        self.assertEqual(response.data['name'], "Cool Card")
+
+
+    def test_get_card_details_when_theres_no_card(self):
+        """
+        GIVEN the card does not exist
+        WHEN a GET request is sent
+        THEN it should return a message saying no card found.
+        """
+        response=self.client.get('/cards/api/1')
+        self.assertEqual(response.data['message'], "No card found")
