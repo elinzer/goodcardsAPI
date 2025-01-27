@@ -1,14 +1,14 @@
 from django.test import TestCase
 from rest_framework import response
-
 from cards.models import Card
 from rest_framework.test import APIClient
 
-# Create your tests here.
+
 class TestCard(TestCase):
 
     def setUp(self):
         self.client = APIClient()
+        self.response = response
 
     def test_get_cards_list_when_there_are_cards_in_db(self):
         """
@@ -35,8 +35,8 @@ class TestCard(TestCase):
             image_url="www.imagurl.com"
         )
 
-        response=self.client.get('/cards/api/card-list')
-        self.assertEqual(len(response.data), 2)
+        self.response=self.client.get('/cards/api/card-list')
+        self.assertEqual(len(self.response.data), 2)
 
 
     def test_get_card_details_when_there_are_cards_in_db(self):
@@ -56,8 +56,8 @@ class TestCard(TestCase):
         )
 
         #TODO: can i test this with {pk} instead of "1"?
-        response=self.client.get('/cards/api/1')
-        self.assertEqual(response.data['name'], "Cool Card")
+        self.response=self.client.get('/cards/api/1')
+        self.assertEqual(self.response.data['name'], "Cool Card")
 
 
     def test_get_card_details_when_theres_no_card(self):
@@ -66,5 +66,5 @@ class TestCard(TestCase):
         WHEN a GET request is sent
         THEN it should return a message saying no card found.
         """
-        response=self.client.get('/cards/api/1')
-        self.assertEqual(response.data['message'], "No card found")
+        self.response=self.client.get('/cards/api/1')
+        self.assertEqual(self.response.data['message'], "No card found")
