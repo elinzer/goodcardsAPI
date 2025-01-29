@@ -17,7 +17,6 @@ class SignUpView(APIView):
         serializer = SignUpSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            print(type(user))
             token = Token.objects.create(user=user)
             body = {'id': user.id, 'username': user.username, 'token': token.key}
             return Response(body, status=status.HTTP_201_CREATED)
