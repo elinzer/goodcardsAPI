@@ -16,7 +16,7 @@ class TestCard(TestCase):
         WHEN a GET request is sent
         THEN it should return a list of cards.
         """
-        card1 = Card.objects.create(
+        Card.objects.create(
             name="Cool Card",
             color_identity="G",
             card_type="Legendary",
@@ -25,7 +25,7 @@ class TestCard(TestCase):
             text="A cool card",
             image_url="www.imagurl.com"
         )
-        card2 = Card.objects.create(
+        Card.objects.create(
             name="Another Cool Card",
             color_identity="G",
             card_type="Legendary",
@@ -35,7 +35,7 @@ class TestCard(TestCase):
             image_url="www.imagurl.com"
         )
 
-        self.response=self.client.get('/cards/api/card-list')
+        self.response=self.client.get('/api/cards/card-list')
         self.assertEqual(len(self.response.data), 2)
 
 
@@ -45,7 +45,7 @@ class TestCard(TestCase):
         WHEN a GET request is sent
         THEN it should return a single card's details.
         """
-        card1 = Card.objects.create(
+        Card.objects.create(
             name="Cool Card",
             color_identity="G",
             card_type="Legendary",
@@ -55,8 +55,8 @@ class TestCard(TestCase):
             image_url="www.imagurl.com"
         )
 
-        #TODO: can i test this with {pk} instead of "1"?
-        self.response=self.client.get('/cards/api/1')
+        #TODO: switch the below to 'reverse' so pk is dynamic
+        self.response=self.client.get('/api/cards/1')
         self.assertEqual(self.response.data['name'], "Cool Card")
 
 
@@ -66,5 +66,8 @@ class TestCard(TestCase):
         WHEN a GET request is sent
         THEN it should return a message saying no card found.
         """
-        self.response=self.client.get('/cards/api/1')
+        #TODO: edit this test to really make sure we're looking for a card that's not there
+        #TODO: check against status code
+
+        self.response=self.client.get('/api/cards/1')
         self.assertEqual(self.response.data['message'], "No card found")

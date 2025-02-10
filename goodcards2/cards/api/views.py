@@ -9,7 +9,7 @@ from user.models import User
 
 class CardListView(APIView):
     @api_view(['GET'])
-    def get_cards(self, request):
+    def get_cards(request):
         cards = Card.objects.all()
         serializer = CardSerializer(cards, many=True)
         return Response(serializer.data)
@@ -17,11 +17,11 @@ class CardListView(APIView):
 
 class CardDetailView(APIView):
     @api_view(['GET'])
-    def get_card_detail(self, request, pk):
+    def get_card_detail(request, pk):
         try:
             card = Card.objects.get(id=pk)
         except Card.DoesNotExist:
-            return Response(data={"message": "No card found"}, status=status.HTTP_204_NO_CONTENT)
+            return Response(data={"message": "No card found"}, status=status.HTTP_404_NOT_FOUND)
         else:
             serializer = CardSerializer(card)
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -29,7 +29,7 @@ class CardDetailView(APIView):
 
 class CreateDeck(APIView):
     @api_view(['POST'])
-    def create_deck(self, request):
+    def create_deck(request):
         deck = Deck.objects.create(
             name=request.data['name'],
             user=User.objects.get(id=request.data['user_id'])
@@ -39,5 +39,5 @@ class CreateDeck(APIView):
 
 class AddCardToDeck(APIView):
     @api_view(['POST'])
-    def add_card_to_deck(self, request, pk):
+    def add_card_to_deck(request, pk):
         pass

@@ -38,3 +38,12 @@ class SignUpSerializer(serializers.ModelSerializer):
             password=make_password(validated_data['password'])
         )
         return user
+
+
+class LoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("username", "password")
+
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True)
