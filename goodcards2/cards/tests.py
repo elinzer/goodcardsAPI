@@ -1,4 +1,5 @@
 from django.test import TestCase
+from django.urls import reverse
 from rest_framework import response
 from cards.models import Card
 from rest_framework.test import APIClient
@@ -9,14 +10,7 @@ class TestCard(TestCase):
     def setUp(self):
         self.client = APIClient()
         self.response = response
-
-    def test_get_cards_list_when_there_are_cards_in_db(self):
-        """
-        GIVEN when there are cards in the database
-        WHEN a GET request is sent
-        THEN it should return a list of cards.
-        """
-        Card.objects.create(
+        self.test_card = Card.objects.create(
             name="Cool Card",
             color_identity="G",
             card_type="Legendary",
@@ -25,16 +19,22 @@ class TestCard(TestCase):
             text="A cool card",
             image_url="www.imagurl.com"
         )
+
+    def test_get_cards_list_when_there_are_cards_in_db(self):
+        """
+        GIVEN when there are cards in the database
+        WHEN a GET request is sent
+        THEN it should return a list of cards.
+        """
         Card.objects.create(
-            name="Another Cool Card",
+            name="Cool Card 2",
             color_identity="G",
             card_type="Legendary",
-            rarity="Uncommon",
+            rarity="Common",
             mtg_set="DSK",
-            text="Another cool card",
+            text="A cool card",
             image_url="www.imagurl.com"
         )
-
         self.response=self.client.get('/api/cards/card-list')
         self.assertEqual(len(self.response.data), 2)
 
@@ -45,18 +45,8 @@ class TestCard(TestCase):
         WHEN a GET request is sent
         THEN it should return a single card's details.
         """
-        Card.objects.create(
-            name="Cool Card",
-            color_identity="G",
-            card_type="Legendary",
-            rarity="Common",
-            mtg_set="DSK",
-            text="A cool card",
-            image_url="www.imagurl.com"
-        )
-
-        #TODO: switch the below to 'reverse' so pk is dynamic
-        self.response=self.client.get('/api/cards/1')
+        url = reverse('card-details', kwargs={'pk': self.test_card.pk})
+        self.response=self.client.get(url)
         self.assertEqual(self.response.data['name'], "Cool Card")
 
 
@@ -66,8 +56,9 @@ class TestCard(TestCase):
         WHEN a GET request is sent
         THEN it should return a message saying no card found.
         """
-        #TODO: edit this test to really make sure we're looking for a card that's not there
-        #TODO: check against status code
+        pk = self.test_card.pk
+        self.test_card.delete()
+        url = reverse('card-details', kwargs={'pk': pk})
 
-        self.response=self.client.get('/api/cards/1')
-        self.assertEqual(self.response.data['message'], "No card found")
+        self.response=self.client.get(url)
+        self.assertEqual(self.response.status_code, 404)
