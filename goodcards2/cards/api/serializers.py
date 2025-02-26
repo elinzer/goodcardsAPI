@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from cards.models import Card, DeckCard
+from cards.models import Card, DeckCard, Deck
 
 class CardSerializer(serializers.ModelSerializer):
     class Meta:
@@ -13,10 +13,12 @@ class CardDeckSerializer(serializers.ModelSerializer):
         fields = ("deck", "card")
 
     def validate(self, attrs):
-        if attrs["deck"] and attrs["card"]:
-            return attrs
-        else:
-            raise serializers.ValidationError({"Error": "Invalid data"})
+        request = self.context.get('request')
+        if not attrs['deck']:
+            raise serializers.ValidationError({'deck': 'This field is required.'})
+        if attrs['deck'].user.id != request.user.id:
+            raise serializers.ValidationError({'deck': "You don't have permission to edit this deck."})
+        return attrs
 
     def create(self, validated_data):
         DeckCard.objects.create(

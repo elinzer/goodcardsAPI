@@ -1,9 +1,11 @@
 from rest_framework import status
-from rest_framework.decorators import api_view
-from cards.models import Card, Deck
-from cards.api.serializers import CardSerializer, CardDeckSerializer
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from cards.api.serializers import CardSerializer, CardDeckSerializer
+from cards.models import Card, Deck
 from user.models import User
 
 
@@ -27,24 +29,27 @@ class CardDetailView(APIView):
             serializer = CardSerializer(card)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-#TODO: make an authenticated endpoint
-#TODO: user logged in user id instead of putting id in request body
+
 class CreateDeck(APIView):
     #TODO: serializer for deck creation?
     @api_view(['POST'])
+    @authentication_classes([TokenAuthentication])
+    @permission_classes([IsAuthenticated])
     def create_deck(request):
         deck = Deck.objects.create(
             name=request.data['name'],
-            user=User.objects.get(id=request.data['user_id'])
+            user=User.objects.get(id=request.user.id)
         )
         return Response(f"Successfully created deck {deck.name}", status=status.HTTP_201_CREATED)
 
-#TODO: make an authenticated endpoint
+
 class AddCardToDeck(APIView):
     @api_view(['POST'])
+    @authentication_classes([TokenAuthentication])
+    @permission_classes([IsAuthenticated])
     def add_card_to_deck(request, pk):
         data = {"deck": pk, "card": request.data['card']}
-        serializer = CardDeckSerializer(data=data)
+        serializer = CardDeckSerializer(data=data, context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response("Successfully added card to deck", status=status.HTTP_201_CREATED)
