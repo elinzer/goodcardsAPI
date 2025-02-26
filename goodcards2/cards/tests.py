@@ -1,22 +1,16 @@
 from django.test import TestCase
+from django.urls import reverse
 from rest_framework import response
-
 from cards.models import Card
 from rest_framework.test import APIClient
 
-# Create your tests here.
+
 class TestCard(TestCase):
 
     def setUp(self):
         self.client = APIClient()
-
-    def test_get_cards_list_when_there_are_cards_in_db(self):
-        """
-        GIVEN when there are cards in the database
-        WHEN a GET request is sent
-        THEN it should return a list of cards.
-        """
-        card1 = Card.objects.create(
+        self.response = response
+        self.test_card = Card.objects.create(
             name="Cool Card",
             color_identity="G",
             card_type="Legendary",
@@ -25,18 +19,24 @@ class TestCard(TestCase):
             text="A cool card",
             image_url="www.imagurl.com"
         )
-        card2 = Card.objects.create(
-            name="Another Cool Card",
+
+    def test_get_cards_list_when_there_are_cards_in_db(self):
+        """
+        GIVEN when there are cards in the database
+        WHEN a GET request is sent
+        THEN it should return a list of cards.
+        """
+        Card.objects.create(
+            name="Cool Card 2",
             color_identity="G",
             card_type="Legendary",
-            rarity="Uncommon",
+            rarity="Common",
             mtg_set="DSK",
-            text="Another cool card",
+            text="A cool card",
             image_url="www.imagurl.com"
         )
-
-        response=self.client.get('/cards/api/card-list')
-        self.assertEqual(len(response.data), 2)
+        self.response=self.client.get('/api/cards/card-list')
+        self.assertEqual(len(self.response.data), 2)
 
 
     def test_get_card_details_when_there_are_cards_in_db(self):
@@ -45,19 +45,9 @@ class TestCard(TestCase):
         WHEN a GET request is sent
         THEN it should return a single card's details.
         """
-        card1 = Card.objects.create(
-            name="Cool Card",
-            color_identity="G",
-            card_type="Legendary",
-            rarity="Common",
-            mtg_set="DSK",
-            text="A cool card",
-            image_url="www.imagurl.com"
-        )
-
-        #TODO: can i test this with {pk} instead of "1"?
-        response=self.client.get('/cards/api/1')
-        self.assertEqual(response.data['name'], "Cool Card")
+        url = reverse('card-details', kwargs={'pk': self.test_card.pk})
+        self.response=self.client.get(url)
+        self.assertEqual(self.response.data['name'], "Cool Card")
 
 
     def test_get_card_details_when_theres_no_card(self):
@@ -66,5 +56,9 @@ class TestCard(TestCase):
         WHEN a GET request is sent
         THEN it should return a message saying no card found.
         """
-        response=self.client.get('/cards/api/1')
-        self.assertEqual(response.data['message'], "No card found")
+        pk = self.test_card.pk
+        self.test_card.delete()
+        url = reverse('card-details', kwargs={'pk': pk})
+
+        self.response=self.client.get(url)
+        self.assertEqual(self.response.status_code, 404)
