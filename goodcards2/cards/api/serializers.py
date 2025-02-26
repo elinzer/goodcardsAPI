@@ -7,6 +7,25 @@ class CardSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class DeckSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Deck
+        fields = ('user', 'name')
+
+    def validate(self, attrs):
+        if attrs["user"] and attrs["name"]:
+            return attrs
+        else:
+            raise serializers.ValidationError({"Error": "Invalid data"})
+
+    def create(self, validated_data):
+        Deck.objects.create(
+            name=validated_data['name'],
+            user=validated_data['user']
+        )
+        return "Successfully created deck!"
+
+
 class CardDeckSerializer(serializers.ModelSerializer):
     class Meta:
         model = DeckCard

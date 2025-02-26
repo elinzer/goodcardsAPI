@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
-from cards.api.serializers import CardSerializer, CardDeckSerializer
+from cards.api.serializers import CardSerializer, CardDeckSerializer, DeckSerializer
 from cards.models import Card, Deck
 from user.models import User
 
@@ -31,16 +31,15 @@ class CardDetailView(APIView):
 
 
 class CreateDeck(APIView):
-    #TODO: serializer for deck creation?
     @api_view(['POST'])
     @authentication_classes([TokenAuthentication])
     @permission_classes([IsAuthenticated])
     def create_deck(request):
-        deck = Deck.objects.create(
-            name=request.data['name'],
-            user=User.objects.get(id=request.user.id)
-        )
-        return Response(f"Successfully created deck {deck.name}", status=status.HTTP_201_CREATED)
+        data = {'user': request.user.id, 'name': request.data['name']}
+        serializer = DeckSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response("Successfully created deck!",status=status.HTTP_201_CREATED)
 
 
 class AddCardToDeck(APIView):
