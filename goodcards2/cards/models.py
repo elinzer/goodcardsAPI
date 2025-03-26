@@ -10,6 +10,7 @@ class Card(models.Model):
         db_table = 'card'
 
     name=models.CharField(max_length=120, null=False)
+    multiverse_id = models.IntegerField(unique=True, null=True, blank=True)
     color_identity=models.CharField(max_length=10, null=False)
     card_type=models.CharField(max_length=120, null=False)
     rarity=models.CharField(max_length=50, null=False)

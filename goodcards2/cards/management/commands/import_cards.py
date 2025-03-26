@@ -24,9 +24,11 @@ class Command(BaseCommand):
 
             new_cards = []
             for card_data in cards:
-                if not Card.objects.filter(name=card_data.get('name')).exists():
+                multiverse_id = card_data.get('multiverseid')
+                if not Card.objects.filter(multiverse_id=multiverse_id).exists():
                     new_cards.append(Card(
                         name=card_data.get('name'),
+                        multiverse_id=multiverse_id,
                         color_identity=card_data.get('colorIdentity'),
                         card_type=card_data.get('type'),
                         rarity=card_data.get('rarity'),
@@ -42,6 +44,6 @@ class Command(BaseCommand):
 
             tracker.last_page = page
             tracker.save()
-            
-            time.sleep(1)
+
+            time.sleep(2)
             page += 1
