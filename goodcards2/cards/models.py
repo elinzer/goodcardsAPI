@@ -36,3 +36,6 @@ class DeckCard(models.Model):
 
     deck=models.ForeignKey(Deck, on_delete=CASCADE, related_name='cards')
     card=models.ForeignKey(Card, on_delete=CASCADE)
+
+class ImportTracker(models.Model):
+    last_page = models.IntegerField(default=1)
