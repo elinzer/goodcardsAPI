@@ -45,5 +45,5 @@ class Command(BaseCommand):
             tracker.last_page = page
             tracker.save()
 
-            time.sleep(2)
+            time.sleep(1)
             page += 1

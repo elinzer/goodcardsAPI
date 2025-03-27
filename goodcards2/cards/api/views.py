@@ -1,21 +1,33 @@
+from django.contrib.admin.templatetags.admin_list import pagination
 from rest_framework import status
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from cards.api.serializers import CardSerializer, CardDeckSerializer, DeckSerializer
 from cards.models import Card, Deck
 from user.models import User
 
+class CardPagination(PageNumberPagination):
+    page_size = 30
+    page_size_query_param = 'page_size'
+    max_page_size = 100
 
-class CardListView(APIView):
-    #TODO: edit this endpoint to return 404 if no cards
-    @api_view(['GET'])
-    def get_cards(request):
-        cards = Card.objects.all()
-        serializer = CardSerializer(cards, many=True)
-        return Response(serializer.data)
+class CardListView(ListAPIView):
+    queryset = Card.objects.all()
+    serializer_class = CardSerializer
+    pagination_class = CardPagination
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        if not queryset.exists():
+            return Response({"message": "No cards found"}, status=404)
+
+        return super().list(request, *args, **kwargs)
         
 
 class CardDetailView(APIView):
