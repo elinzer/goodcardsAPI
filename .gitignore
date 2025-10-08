@@ -3,3 +3,28 @@
 *.pyc
 *__pycache__*
 goodcards2/db.sqlite3
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE settings
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python version management
+.python-version
+
+# Environment variables
+.env
+.env.local
+
+# macOS
+.DS_Store
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
