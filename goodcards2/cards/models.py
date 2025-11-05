@@ -16,7 +16,17 @@ class Card(models.Model):
     mtg_set=models.CharField(max_length=3, null=False)
     text=models.TextField(max_length=2000, null=True)
     image_url=models.URLField(max_length=1000, null=True)
-    
+
+    # Fields for double-sided cards
+    # Layout types: 'normal', 'transform', 'modal_dfc', 'split', 'flip', 'adventure', etc.
+    layout=models.CharField(max_length=50, default='normal', null=False)
+    is_double_sided=models.BooleanField(default=False)  # True only for transform/modal_dfc
+    back_name=models.CharField(max_length=120, null=True, blank=True)
+    back_color_identity=models.CharField(max_length=10, null=True, blank=True)
+    back_card_type=models.CharField(max_length=120, null=True, blank=True)
+    back_text=models.TextField(max_length=2000, null=True, blank=True)
+    back_image_url=models.URLField(max_length=1000, null=True, blank=True)
+
     def __str__(self):
         return self.name
 

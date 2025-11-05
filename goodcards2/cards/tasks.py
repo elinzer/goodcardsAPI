@@ -2,6 +2,7 @@ import requests
 import time
 from celery import shared_task
 from cards.models import Card
+from cards.scryfall import build_scryfall_url, process_card_data
 
 
 @shared_task
@@ -18,14 +19,7 @@ def fetch_cards_from_scryfall(set_code=None, limit=100):
     """
     print(f"Starting Scryfall fetch task - Set: {set_code}, Limit: {limit}")
 
-    # Build the API URL
-    if set_code:
-        # Fetch cards from a specific set
-        url = f"https://api.scryfall.com/cards/search?q=set:{set_code}&unique=prints"
-    else:
-        # Fetch random cards (for testing)
-        url = "https://api.scryfall.com/cards/search?q=type:creature&order=random"
-
+    url = build_scryfall_url(set_code)
     cards_saved = 0
     cards_skipped = 0
     errors = []
@@ -46,30 +40,9 @@ def fetch_cards_from_scryfall(set_code=None, limit=100):
                     break
 
                 try:
-                    # Extract card fields
-                    # Scryfall uses different field names than our model
-                    name = card_data.get('name')
-
-                    # Color identity is a list, join it into a string
-                    color_identity = ''.join(card_data.get('color_identity', []))
-                    if not color_identity:
-                        color_identity = 'C'  # Colorless
-
-                    # Type line contains the card type
-                    card_type = card_data.get('type_line', 'Unknown')
-
-                    # Rarity
-                    rarity = card_data.get('rarity', 'common').capitalize()
-
-                    # Set code
-                    mtg_set = card_data.get('set', '').upper()
-
-                    # Oracle text (rules text)
-                    text = card_data.get('oracle_text', '')
-
-                    # Image URL
-                    image_uris = card_data.get('image_uris', {})
-                    image_url = image_uris.get('normal', image_uris.get('large', ''))
+                    # Process the card data
+                    processed_data = process_card_data(card_data)
+                    name = processed_data['name']
 
                     # Check if card already exists (by name)
                     # You might want to use Scryfall ID instead for uniqueness
@@ -79,15 +52,7 @@ def fetch_cards_from_scryfall(set_code=None, limit=100):
                         continue
 
                     # Create and save the card
-                    Card.objects.create(
-                        name=name,
-                        color_identity=color_identity[:10],  # Limit to field max_length
-                        card_type=card_type[:120],  # Limit to field max_length
-                        rarity=rarity[:50],  # Limit to field max_length
-                        mtg_set=mtg_set[:3],  # Limit to field max_length
-                        text=text[:2000] if text else None,  # Limit to field max_length
-                        image_url=image_url[:1000] if image_url else None  # Limit to field max_length
-                    )
+                    Card.objects.create(**processed_data)
 
                     cards_saved += 1
                     print(f"Saved card {cards_saved}/{limit}: {name}")
